@@ -1,0 +1,54 @@
+#!/bin/bash
+
+###########################
+# Scheduler Configuration #
+###########################
+# Set Up Email Preferences #
+#PBS -M <email address>
+#PBS -m bea
+#PBS -q normal
+#PBS -l walltime=24:00:00
+#PBS -l nodes=16:ppn=32:xe
+#PBS -N <job name>
+#PBS -V
+#PBS -cwd
+#PBS -A <account number>
+
+
+#########################
+# Pre-Job Configuration #
+#########################
+# Output file
+OUTPUT=$PBS_JOBID.log
+
+# Alternative to (-cwd)
+cd $PBS_O_WORKDIR
+
+# Save some information about the job to the file
+echo "#############" >> $OUTPUT
+echo "# JOB SETUP #" >> $OUTPUT
+echo "#############" >> $OUTPUT
+echo "Job Start Time:" >> $OUTPUT
+date >> $OUTPUT
+echo "Job ID: $PBS_JOBID" >> $OUTPUT
+echo "Queue: $PBS_O_QUEUE" >> $OUTPUT
+echo "Node List:" >> $OUTPUT
+cat $PBS_NODEFILE >> $OUTPUT
+echo "Work Directory: $PBS_O_WORKDIR" >> $OUTPUT
+echo "" >> $OUTPUT
+
+################
+# Execute Work #
+################
+echo "##############" >> $OUTPUT
+echo "# JOB OUTPUT #" >> $OUTPUT
+echo "##############" >> $OUTPUT
+aprun -n 512 program.exe >> $OUTPUT
+
+###################
+# Post-Processing #
+###################
+echo "Job End Time:" >> $OUTPUT
+date >> $OUTPUT
+
+

@@ -1,0 +1,79 @@
+#!/bin/bash
+
+###########################
+# Scheduler Configuration #
+###########################
+# Set Up Email Preferences #
+#  Send an email to the specified email address when the job begins (b), ends (e)
+#  or when aborting (a) from and error.
+#PBS -M <email address>
+#PBS -m bea
+
+# Specify Compute Resources #
+#  Select which resource queue (-q)  how long to run, and how many and what type of compute 
+#  resources are needed.
+#PBS -q <queue name>
+#PBS -l walltime=24:00:00
+#PBS -l nodes=10:ppn=24
+
+# Specify Job Properties #
+#  The common job name (-N) used in email and  when querying the queue. Usually,  you will
+#  want to capture the exact Linux environment including all defined variables, paths,
+#  etc. (-V). Also, you may want to change to the current working directory where the job script 
+#  is run (-cwd).
+#PBS -N <job name>
+#PBS -V
+#PBS -cwd
+
+# Indicate Computer Allocation Number #
+#  You will probably only need this if you have more than one allocation on
+#  the supercomputer.
+#PBS -A <account number>
+
+
+#########################
+# Pre-Job Configuration #
+#########################
+# Output file
+OUTPUT=$PBS_JOBID.log
+
+# Alternative to (-cwd)
+cd $PBS_O_WORKDIR
+
+# Save some information about the job to the file
+echo "#############" >> $OUTPUT
+echo "# JOB SETUP #" >> $OUTPUT
+echo "#############" >> $OUTPUT
+echo "Job Start Time:" >> $OUTPUT
+date >> $OUTPUT
+echo "Job ID: $PBS_JOBID" >> $OUTPUT
+echo "Queue: $PBS_O_QUEUE" >> $OUTPUT
+echo "Node List:" >> $OUTPUT
+cat $PBS_NODEFILE >> $OUTPUT
+echo "Work Directory: $PBS_O_WORKDIR" >> $OUTPUT
+echo "" >> $OUTPUT
+
+################
+# Execute Work #
+################
+echo "##############" >> $OUTPUT
+echo "# JOB OUTPUT #" >> $OUTPUT
+echo "##############" >> $OUTPUT
+
+# Normal Clusters #
+#  For example, use 240 processors (10 nodes x 24 processors).
+#  The second option is only necessary in some cases, for example
+#  if your program uses OpenMP/MPI or some other multilevel
+#  parallelism and need fewer than the actual processes.
+mpirun -np 240 --hostfile $PBS_NODEFILE program.exe [options] >> $OUTPUT
+
+## Cray Clusters
+aprun -n 240 program.exe [options] >> $OUTPUT
+
+###################
+# Post-Processing #
+###################
+echo "Job End Time:" >> $OUTPUT
+date >> $OUTPUT
+
+
